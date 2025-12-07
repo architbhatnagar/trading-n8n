@@ -12,4 +12,9 @@ const UserSchema = new Schema({
     }
 });
 
-export const User = mongoose.models.Users || mongoose.model("Users", UserSchema);
+export interface IUser {
+    username: string;
+    password: string;
+}
+
+export const User = (mongoose.models.Users as mongoose.Model<IUser>) || mongoose.model<IUser>("Users", UserSchema);
