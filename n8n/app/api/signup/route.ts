@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { User } from "../../../db";
 import { SignupSchema } from "../../../common/types";
-
-mongoose.connect(process.env.MONGODB_URI!);
+import dbConnect from "@/db/connect";
 
 export async function POST(request: Request) {
+    await dbConnect();
     const { success, data } = SignupSchema.safeParse(await request.json());
     if (!success) {
 
