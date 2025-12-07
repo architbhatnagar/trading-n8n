@@ -33,9 +33,9 @@ const PositionSchema = new Schema({
 const NodeDataSchema = new Schema({
     kind: {
         type: String,
+        enum: ["function", "trigger", "action"],
         required: true
     },
-    enum: ["function", "trigger", "action"],
     metadata: Schema.Types.Mixed
 }, {
     _id: false
