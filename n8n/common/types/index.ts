@@ -12,7 +12,7 @@ export const SigninSchema = z.object({
 });
 
 export const WorkflowSchema = z.object({
-    userId: z.string(),
+    userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
     edges: z.array(z.object({
         id: z.string(),
         source: z.string(),
