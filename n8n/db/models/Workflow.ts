@@ -69,4 +69,10 @@ const WorkflowSchema = new Schema({
     nodes: [WorkflowNodeSchema]
 });
 
-export const Workflow = mongoose.models.Workflows || mongoose.model("Workflows", WorkflowSchema);
+export interface IWorkflow {
+    userId: mongoose.Types.ObjectId;
+    edges: any[];
+    nodes: any[];
+}
+
+export const Workflow = (mongoose.models.Workflows as mongoose.Model<IWorkflow>) || mongoose.model<IWorkflow>("Workflows", WorkflowSchema);
