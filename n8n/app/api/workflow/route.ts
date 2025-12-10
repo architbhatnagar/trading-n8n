@@ -64,7 +64,7 @@ export async function PUT(request: Request) {
     nodes.map(async (node: any) => {
       let existingNode = null;
 
-      if (node.nodeId) {
+      if (node.nodeId && /^[0-9a-fA-F]{24}$/.test(node.nodeId)) {
         existingNode = await NodeModel.findByIdAndUpdate(
           node.nodeId,
           {
@@ -74,7 +74,7 @@ export async function PUT(request: Request) {
             type: node.data.kind,
             credentialsType: [],
           },
-          { new: true }
+          { new: true } as any
         );
       }
 
