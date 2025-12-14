@@ -58,6 +58,55 @@ export async function PUT(request: Request) {
   }
 
   const { userId, edges, nodes } = data;
-  const workflows = await Workflow.create({ userId, edges, nodes });
+  const idMapping: Record<string, string> = {};
+
+  const newNodes = await Promise.all(
+    nodes.map(async (node: any) => {
+      let existingNode = null;
+
+      if (node.nodeId && /^[0-9a-fA-F]{24}$/.test(node.nodeId)) {
+        existingNode = await NodeModel.findByIdAndUpdate(
+          node.nodeId,
+          {
+            title: node.data.metadata.label,
+            description:
+              node.data.metadata.description || node.data.metadata.label,
+            type: node.data.kind,
+            credentialsType: [],
+          },
+          { new: true } as any
+        );
+      }
+
+      if (!existingNode) {
+        existingNode = await NodeModel.create({
+          title: node.data.metadata.label,
+          description:
+            node.data.metadata.description || node.data.metadata.label,
+          type: node.data.kind,
+          credentialsType: [],
+        });
+      }
+
+      idMapping[node.id] = existingNode._id.toString();
+
+      return {
+        ...node,
+        nodeId: existingNode._id,
+      };
+    })
+  );
+
+  const newEdges = edges.map((edge: any) => ({
+    ...edge,
+    source: idMapping[edge.source] || edge.source,
+    target: idMapping[edge.target] || edge.target,
+  }));
+
+  const workflows = await Workflow.create({
+    userId,
+    edges: newEdges,
+    nodes: newNodes,
+  });
   return NextResponse.json(workflows);
 }

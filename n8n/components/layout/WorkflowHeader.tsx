@@ -3,13 +3,14 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Share2, Save } from "lucide-react";
+import { Share2, Save, Play } from "lucide-react";
 
 interface WorkflowHeaderProps {
   workflowName: string;
   setWorkflowName: (name: string) => void;
   onSave: () => void;
   onShare: () => void;
+  onRun: () => void;
 }
 
 export function WorkflowHeader({
@@ -17,6 +18,7 @@ export function WorkflowHeader({
   setWorkflowName,
   onSave,
   onShare,
+  onRun,
 }: WorkflowHeaderProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -53,6 +55,10 @@ export function WorkflowHeader({
 
   const actionContent = (
     <div className="flex items-center gap-2">
+      <Button size="sm" variant="outline" onClick={onRun} className="text-green-600 border-green-600 hover:bg-green-50">
+        <Play className="mr-2 h-4 w-4" />
+        Run
+      </Button>
       <Button size="sm" variant="outline" onClick={onShare}>
         <Share2 className="mr-2 h-4 w-4" />
         Share

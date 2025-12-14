@@ -26,11 +26,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WorkflowNodeType } from "@/common/types/WorkFlowNodeType";
+import Link from "next/link";
 import ColorSelector from "@/components/nodes/customNode";
+import FetchStockNode from "@/components/nodes/FetchStockNode";
+import TechnicalNode from "@/components/nodes/TechnicalNode";
 import { v4 as uuidv4 } from "uuid";
 
 const nodeTypes = {
   selectorNode: ColorSelector,
+  fetchStockNode: FetchStockNode,
+  technicalNode: TechnicalNode,
 };
 const initialNodes = [
   {
@@ -162,6 +167,7 @@ export default function CreateWorkflow() {
     id: string;
     title: string;
     description: string;
+    type?: string;
   }) => {
     const newNode = {
       id: uuidv4(), // Generate a unique ID for the new node
@@ -170,9 +176,26 @@ export default function CreateWorkflow() {
         label: nodeTemplate.title,
         description: nodeTemplate.description,
       },
-      type: "selectorNode", // Default node type, adjust as needed
+      type: nodeTemplate.type || "selectorNode", // Use provided type or default
     };
     setNodes((nds) => nds.concat(newNode));
+  };
+
+  const handleRun = async () => {
+    // For now we assume the workflow is saved or we pass the ID.
+    // If not saved, we might want to save first or allow ephemeral execution (future).
+    // Let's assume we use the hardcoded/current ID for now or the one from params if we had it.
+    // The current code fetches a hardcoded ID: "69357c34454453bfcc8ffb31"
+    const workflowId = "69357c34454453bfcc8ffb31";
+
+    try {
+      const res = await fetchApi.post("/workflow/execute", { workflowId });
+      console.log("Execution Result:", res.data);
+      alert(`Execution Status: ${res.data.status}\nCheck console for logs.`);
+    } catch (err) {
+      console.error("Execution failed", err);
+      alert("Execution failed. See console.");
+    }
   };
 
   return (
@@ -184,6 +207,7 @@ export default function CreateWorkflow() {
           setWorkflowName={setWorkflowName}
           onSave={handleSave}
           onShare={handleShare}
+          onRun={handleRun}
         />
       }
       mainClassName="p-0"
@@ -203,10 +227,7 @@ export default function CreateWorkflow() {
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button
-              className="fixed top-16 right-4 rounded-full"
-              // onClick={toggleSheet}
-            >
+            <Button className="fixed top-16 right-4 rounded-full">
               <PlusIcon className="h-4 w-4" />
             </Button>
           </SheetTrigger>
@@ -217,36 +238,59 @@ export default function CreateWorkflow() {
                 Select the node you want to add to your workflow.
               </SheetDescription>
             </SheetHeader>
-            <div className="grid flex-1 auto-rows-min gap-6 px-4">
+            <div className="grid flex-1 auto-rows-min gap-6 px-4 py-4">
               <Input
                 placeholder="Search nodes..."
                 className="w-full"
                 onChange={(e) => console.log(e.target.value)}
               />
-              {/* <div className="grid gap-3">
-                <Label htmlFor="sheet-demo-name">Name</Label>
-                <Input id="sheet-demo-name" defaultValue="Pedro Duarte" />
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="sheet-demo-username">Username</Label>
-                <Input id="sheet-demo-username" defaultValue="@peduarte" />
-              </div> */}
               {allNodes?.map((node) => (
                 <div
                   key={node.id}
                   onClick={() => {
-                    console.log(node);
                     addNodeToCanvas(node);
                   }}
-                  className="cursor-pointer"
+                  className="cursor-pointer border p-2 rounded hover:bg-slate-50"
                 >
-                  <Label>{node.title}</Label>
-                  <p>{node.description}</p>
+                  <Label className="cursor-pointer">{node.title}</Label>
+                  <p className="text-sm text-slate-500">{node.description}</p>
                 </div>
               ))}
+              {/* Manual Entry for New Node Types (Temporary until dynamic list) */}
+              <div
+                onClick={() => {
+                  addNodeToCanvas({
+                    id: "temp-stock",
+                    title: "Fetch Stock Data",
+                    description: "Get real-time price info",
+                    type: "fetchStockNode",
+                  });
+                }}
+                className="cursor-pointer border p-2 rounded hover:bg-slate-50"
+              >
+                <Label className="cursor-pointer">Fetch Stock Data</Label>
+                <p className="text-sm text-slate-500">
+                  Get real-time price info
+                </p>
+              </div>
+              <div
+                onClick={() => {
+                  addNodeToCanvas({
+                    id: "temp-technical",
+                    title: "Technical Indicator",
+                    description: "Calculate SMA, EMA, RSI",
+                    type: "technicalNode",
+                  });
+                }}
+                className="cursor-pointer border p-2 rounded hover:bg-slate-50"
+              >
+                <Label className="cursor-pointer">Technical Indicator</Label>
+                <p className="text-sm text-slate-500">
+                  Calculate SMA, EMA, RSI
+                </p>
+              </div>
             </div>
             <SheetFooter>
-              <Button type="submit">Save changes</Button>
               <SheetClose asChild>
                 <Button variant="outline">Close</Button>
               </SheetClose>
